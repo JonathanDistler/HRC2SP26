@@ -61,7 +61,7 @@ Once at the correct location, use the aforementioned "ros2 topoic echo /amcl_pos
 
 ![Locations.yaml Example Setup](Resources/locations.yaml.png)
 
-Finally, I "cd'ed" into the setup.py file and changed the entry points to reflect the addition of the waypoints ([Setup File](Setup_Files\setup.py)). 
+Finally, I "cd'ed" into the setup.py file and changed the entry points to reflect the addition of the waypoints ([Setup File](Setup_Files/setup.py)). 
 
 ![Setup.py Example Setup](Resources/setup.py.png)
 
@@ -76,7 +76,7 @@ stretch_robot_home.py
 
 ### 2. Initialize Navigation with a Prebuilt Map
 
-In the same terminal, run the following to initialize a previously built map of the room ([Map Start Location File](Setup_Files\start_pos.yaml)) & ([Map Start Location Publisher](Setup_Files\initial_pose_publisher.py)):
+In the same terminal, run the following to initialize a previously built map of the room ([Map Start Location File](Setup_Files/start_pos.yaml)) & ([Map Start Location Publisher](Setup_Files/initial_pose_publisher.py)):
 
 ```bash
 ros2 launch stretch_nav2 navigation.launch.py \
@@ -105,7 +105,7 @@ ros2 run stretch_init_pose initial_pose
 
 ### 4. Navigate to a Target Location
 
-To specify a location to navigate toward, run one of the following commands ([Go-To Location File](Setup_Files\goto_location.py)).
+To specify a location to navigate toward, run one of the following commands ([Go-To Location File](Setup_Files/goto_location.py)).
 
 For the location **table_with_robot**:
 
