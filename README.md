@@ -32,7 +32,7 @@ map:=/home/hello-robot/stretch_user/maps/updated_lab_map.yaml
 ```
 Then, navigate to the upper toolbar in RVIZ, and click on "2D Pose Estimate", then with the cursor, move it to the location of the robot in the map (which is why it is beneficial to have such a clear boundary demarquated by a solid boundary that the LiDAR system detects as a wall). 
 
-![LiDAR Scan with Initialized Robot in Map; Location of Toolbar](/Resources/LiDAR.png)
+![LiDAR Scan with Initialized Robot in Map; Location of Toolbar](Resources/LiDAR.png)
 
 Then, run the following to echo the position of the robot in the map's frame: 
 
@@ -59,11 +59,11 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard –ros-args -r cmd_vel:=/st
 ```
 Once at the correct location, use the aforementioned "ros2 topoic echo /amcl_pose" to get the location and orientation of the robot. Copy the output and place it in **/ros2_ws_26/src/stretch_init_pose/config/locations.yaml**. However, this time it doesn't require the covariance term, just the x,y, and z positional vector and the wx, wy, and wz angular orientation. 
 
-![Locations.yaml Example Setup](/Resources/locations.yaml.png)
+![Locations.yaml Example Setup](Resources/locations.yaml.png)
 
 Finally, I "cd'ed" into the setup.py file and changed the entry points to reflect the addition of the waypoints ([Setup File](Setup_Files\setup.py)). 
 
-![Setup.py Example Setup](/Resources/setup.py.png)
+![Setup.py Example Setup](Resources/setup.py.png)
 
 
 ### 1. Calibrate the Robot
