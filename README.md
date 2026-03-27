@@ -8,6 +8,10 @@ The general pipeline is as follows. First, I rn the following to begin mapping t
 
 ```bash
  ros2 launch stretch_nav2 offline_mapping.launch.py
+
+ ros2 run stretch_core keyboard_teleop
+
+ros2 service call /switch_to_position_mode std_srvs/srv/Trigger {}
 ```
 
 This involved starting at a specified location, in our case, a corner bounded by a 90-degree wooden box that creates a noticeable landmark in the map for reproducibililty. 
