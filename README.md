@@ -83,8 +83,7 @@ stretch_robot_home.py
 In the same terminal, run the following to initialize a previously built map of the room ([Map Start Location File](Setup_Files/start_pos.yaml)) & ([Map Start Location Publisher](Setup_Files/initial_pose_publisher.py)):
 
 ```bash
-ros2 launch stretch_nav2 navigation.launch.py \
-map:=/home/hello-robot/stretch_user/maps/updated_lab_map.yaml
+ros2 launch stretch_nav2 navigation.launch.py map:=/home/hello-robot/stretch_user/maps/finalized_map.yaml
 ```
 
 If you are running a headless version (for example via SSH), run:
