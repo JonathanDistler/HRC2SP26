@@ -90,7 +90,7 @@ If you are running a headless version (for example via SSH), run:
 
 ```bash
 ros2 launch stretch_nav2 navigation.launch.py \
-map:=/home/hello-robot/stretch_user/maps/updated_lab_map.yaml \
+map:=/home/hello-robot/stretch_user/maps/finalized_map.yaml \
 use_rviz:=false
 ```
 
