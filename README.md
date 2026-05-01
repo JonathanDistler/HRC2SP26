@@ -8,6 +8,10 @@ The general pipeline is as follows. First, I rn the following to begin mapping t
 
 ```bash
  ros2 launch stretch_nav2 offline_mapping.launch.py
+
+ ros2 run stretch_core keyboard_teleop
+
+ros2 service call /switch_to_position_mode std_srvs/srv/Trigger {}
 ```
 
 This involved starting at a specified location, in our case, a corner bounded by a 90-degree wooden box that creates a noticeable landmark in the map for reproducibililty. 
@@ -79,15 +83,14 @@ stretch_robot_home.py
 In the same terminal, run the following to initialize a previously built map of the room ([Map Start Location File](Setup_Files/start_pos.yaml)) & ([Map Start Location Publisher](Setup_Files/initial_pose_publisher.py)):
 
 ```bash
-ros2 launch stretch_nav2 navigation.launch.py \
-map:=/home/hello-robot/stretch_user/maps/updated_lab_map.yaml
+ros2 launch stretch_nav2 navigation.launch.py map:=/home/hello-robot/stretch_user/maps/finalized_map.yaml
 ```
 
 If you are running a headless version (for example via SSH), run:
 
 ```bash
 ros2 launch stretch_nav2 navigation.launch.py \
-map:=/home/hello-robot/stretch_user/maps/updated_lab_map.yaml \
+map:=/home/hello-robot/stretch_user/maps/finalized_map.yaml \
 use_rviz:=false
 ```
 
@@ -120,3 +123,9 @@ ros2 run stretch_init_pose goto_location back_table
 ```
 
 These commands function similarly to grounding the robot, using a predefined location matrix to navigate from the initialized robot position to the desired goal location.
+<<<<<<< HEAD
+=======
+
+## Steps Going Forward
+This pipeline wasn't very robust, adn error propogation was very poor (meaning that it wouldn't return to the exact spot during different iterations). Going forward, I'm going to attemp to get Hello-Robot's FunMap Stack running to improve the versatility with SLAM architecture and camera usage rather than reliance only on LiDAR systems. 
+>>>>>>> bea64392c4050f860103d864f2da8bb9e6135d56
