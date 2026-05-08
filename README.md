@@ -123,9 +123,3 @@ ros2 run stretch_init_pose goto_location back_table
 ```
 
 These commands function similarly to grounding the robot, using a predefined location matrix to navigate from the initialized robot position to the desired goal location.
-<<<<<<< HEAD
-=======
-
-## Steps Going Forward
-This pipeline wasn't very robust, adn error propogation was very poor (meaning that it wouldn't return to the exact spot during different iterations). Going forward, I'm going to attemp to get Hello-Robot's FunMap Stack running to improve the versatility with SLAM architecture and camera usage rather than reliance only on LiDAR systems. 
->>>>>>> bea64392c4050f860103d864f2da8bb9e6135d56
