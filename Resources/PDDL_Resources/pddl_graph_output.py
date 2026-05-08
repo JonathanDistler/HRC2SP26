@@ -238,11 +238,16 @@ for t, step in enumerate(timeline, start=1):
         color = "lightblue" if act["agent"] == "p1" else "lightgreen"
 
         ax.text(
-            x, y,
-            build_label(act),
-            ha='center', va='center',
-            abbox=dict(boxstyle="round,pad=0.5", fc=color, ec="black")
-        )
+    x, y,
+    build_label(act),
+    ha='center',
+    va='center',
+    bbox=dict(
+        boxstyle="round,pad=0.5",
+        fc=color,
+        ec="black"
+    )
+)
 
 # DRAW EDGES
 for j in range(len(actions)):
