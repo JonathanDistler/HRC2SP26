@@ -1,10 +1,9 @@
+#imports
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from collections import defaultdict
 
-# =========================================================
-# PLAN
-# =========================================================
+#Example plan that would be provided by Timothy, this can change dynamicallly 
 plan = """(move p2 kitchen pantry)
 (take p2 ham pantry)
 (move p2 pantry kitchen)
@@ -20,10 +19,12 @@ plan = """(move p2 kitchen pantry)
 (make-sandwich p2 kitchen bread cheese ham lettuce)
 """
 
-# =========================================================
-# PARSE
-# =========================================================
+# The planner outputs actions as strings.
+# This section converts those strings into something
+# easier to work with in Python.
 def parse_plan(plan):
+
+    # Remove parentheses and blank lines
     return [
         line.strip()[1:-1]
         for line in plan.splitlines()
@@ -32,6 +33,16 @@ def parse_plan(plan):
 
 def split_action(action):
 
+    # Split symbolic action into pieces
+    #
+    # Example:
+    # "take p2 ham pantry"
+    #
+    # becomes:
+    # verb  = take
+    # agent = p2
+    # args  = [ham, pantry]
+    #
     p = action.split()
 
     return {
@@ -43,13 +54,9 @@ def split_action(action):
 
 actions = [split_action(a) for a in parse_plan(plan)]
 
-# =========================================================
-# FINAL INGREDIENTS
-# =========================================================
-#
-# Extract ingredients from final assembly action.
-# Robust to different task names.
-#
+# The final action usually contains all ingredients.
+# We grab those automatically so the visualization
+# works for lots of different plans.
 final_action = actions[-1]
 
 KNOWN_LOCATIONS = {
@@ -62,19 +69,25 @@ KNOWN_LOCATIONS = {
     "cabinet"
 }
 
+# Filter out locations so only ingredients remain
 ingredients = [
     a for a in final_action["args"]
     if a.lower() not in KNOWN_LOCATIONS
 ]
 
-# =========================================================
-# HELPERS
-# =========================================================
+
+# These helper functions keep the main logic cleaner.
 def normalize(text):
     return text.lower()
 
 def belongs_to(act, ingredient):
 
+    # Checks whether an action is related
+    # to a specific ingredient.
+    #
+    # Example:
+    # slice-ham belongs to ham
+    #
     ingredient = normalize(ingredient)
 
     return (
@@ -84,6 +97,7 @@ def belongs_to(act, ingredient):
 
 def ingredient_from_action(act):
 
+    # Find which ingredient an action belongs to
     for ing in ingredients:
         if belongs_to(act, ing):
             return ing
@@ -91,29 +105,15 @@ def ingredient_from_action(act):
     return None
 
 def is_move(act):
+
+    # Movement actions get handled differently
     return act["verb"] == "move"
 
-# =========================================================
-# COLUMN ORGANIZATION
-# =========================================================
-#
-# Key idea:
-#
-# Movement actions belong ONLY to:
-# - the NEXT action performed
-# - by the SAME AGENT
-#
-# This avoids:
-# - human moves appearing in ham
-# - robot moves appearing in bread
-#
-# Robust for arbitrary PDDL outputs.
-#
-# =========================================================
+# Every ingredient gets its own vertical column.
 
 columns = defaultdict(list)
 
-# Track move per agent
+# Temporarily store movement actions
 pending_move = {}
 
 for act in actions[:-1]:
@@ -121,7 +121,12 @@ for act in actions[:-1]:
     agent = act["agent"]
 
     # -----------------------------------------------------
-    # STORE MOVEMENT TEMPORARILY
+    # SAVE MOVEMENT FOR LATER
+    # -----------------------------------------------------
+    #
+    # We wait until the next real action before
+    # deciding where the movement belongs.
+    #
     # -----------------------------------------------------
     if is_move(act):
 
@@ -129,7 +134,7 @@ for act in actions[:-1]:
         continue
 
     # -----------------------------------------------------
-    # FIND INGREDIENT COLUMN
+    # FIND THE RIGHT INGREDIENT COLUMN
     # -----------------------------------------------------
     ing = ingredient_from_action(act)
 
@@ -139,7 +144,12 @@ for act in actions[:-1]:
     col_name = ing.upper()
 
     # -----------------------------------------------------
-    # ATTACH AGENT'S PENDING MOVE
+    # ATTACH SAVED MOVEMENT
+    # -----------------------------------------------------
+    #
+    # If this agent moved before the task,
+    # place the movement directly above it.
+    #
     # -----------------------------------------------------
     if agent in pending_move:
 
@@ -150,13 +160,12 @@ for act in actions[:-1]:
         del pending_move[agent]
 
     # -----------------------------------------------------
-    # ADD CURRENT ACTION
+    # ADD CURRENT TASK
     # -----------------------------------------------------
     columns[col_name].append(act)
 
-# =========================================================
-# ENSURE ALL INGREDIENTS EXIST
-# =========================================================
+# Even if an ingredient has no visible steps,
+# we still create an empty column for consistency.
 for ing in ingredients:
 
     col_name = ing.upper()
@@ -165,9 +174,9 @@ for ing in ingredients:
 
         columns[col_name] = []
 
-# =========================================================
-# ADD UNASSIGNED BLOCKS
-# =========================================================
+# If nothing happened for an ingredient,
+# create a placeholder box instead of leaving
+# the column blank.
 for col_name in columns:
 
     if len(columns[col_name]) == 0:
@@ -179,19 +188,7 @@ for col_name in columns:
             "raw": f"unassigned-{col_name}"
         })
 
-# =========================================================
-# CROSS-AGENT DEPENDENCIES
-# =========================================================
-#
-# Dashed arrows ONLY when:
-# - one agent finishes with ingredient
-# - another agent later uses ingredient
-#
-# Example:
-# Human drops bread
-# Robot assembles bread
-#
-# =========================================================
+# Dashed arrows show handoffs between agents.
 
 dependency_arrows = []
 
@@ -199,23 +196,27 @@ for ing in ingredients:
 
     relevant = []
 
+    # Collect every action related to ingredient
     for act in actions:
 
         if belongs_to(act, ing):
             relevant.append(act)
 
+    # Look for agent switches
     for i in range(len(relevant) - 1):
 
         a1 = relevant[i]
         a2 = relevant[i + 1]
 
+        # Different agents = dependency
         if a1["agent"] != a2["agent"]:
 
             dependency_arrows.append((a1, a2))
 
-# =========================================================
-# AGENT COLORS
-# =========================================================
+
+# Human = green
+# Robot = blue
+# Unknown = gray
 AGENT_MAP = {
     "p1": "human",
     "p2": "robot",
@@ -240,9 +241,11 @@ def get_color(agent):
 def agent_label(agent):
     return normalize_agent(agent).capitalize()
 
-# =========================================================
-# NATURAL LANGUAGE LABELS
-# =========================================================
+# TURN SYMBOLIC ACTIONS INTO HUMAN TEXT
+# Planner actions are ugly to read.
+# This converts them into cleaner labels
+# for the visualization boxes.
+
 def to_natural(act):
 
     verb = act["verb"]
@@ -251,13 +254,13 @@ def to_natural(act):
     obj = ingredient_from_action(act)
 
     # -----------------------------------------------------
-    # UNASSIGNED
+    # EMPTY PLACEHOLDER
     # -----------------------------------------------------
     if verb == "unassigned":
         return "Unassigned\n(No actions)"
 
     # -----------------------------------------------------
-    # MOVE
+    # MOVEMENT
     # -----------------------------------------------------
     if verb == "move":
 
@@ -267,7 +270,7 @@ def to_natural(act):
         return f"Move\n{src} → {dst}\n({agent})"
 
     # -----------------------------------------------------
-    # TAKE
+    # PICKUP
     # -----------------------------------------------------
     if verb == "take":
         return f"Pick up {obj}\n({agent})"
@@ -279,7 +282,7 @@ def to_natural(act):
         return f"Drop {obj}\n({agent})"
 
     # -----------------------------------------------------
-    # PROCESSING
+    # PREP TASKS
     # -----------------------------------------------------
     if "slice" in verb:
         return f"Slice {obj}\n({agent})"
@@ -293,14 +296,13 @@ def to_natural(act):
     if "toast" in verb:
         return f"Toast {obj}\n({agent})"
 
-    # -----------------------------------------------------
-    # FALLBACK
-    # -----------------------------------------------------
+
+    # If we don't recognize the action,
+    # just prettify the original verb.
     return f"{verb.replace('-', ' ').title()}\n({agent})"
 
-# =========================================================
-# DRAW BOX
-# =========================================================
+
+# This draws a colored rectangle with text inside.
 def draw_box(ax, x, y, text, agent, w=1.35, h=0.45):
 
     color = get_color(agent)
@@ -324,17 +326,14 @@ def draw_box(ax, x, y, text, agent, w=1.35, h=0.45):
         color="white"
     )
 
-# =========================================================
-# PLOT
-# =========================================================
+# CREATE FIGURE
 fig, ax = plt.subplots(figsize=(16, 10))
 
+# Ingredient columns go left-to-right
 col_names = list(columns.keys())
 col_x = [i * 2.0 for i in range(len(col_names))]
 
-# =========================================================
-# TITLE
-# =========================================================
+#title
 ax.text(
     sum(col_x) / len(col_x),
     7.8,
@@ -345,15 +344,14 @@ ax.text(
     color="white"
 )
 
-# =========================================================
-# DRAW COLUMNS
-# =========================================================
+# Every ingredient becomes a vertical workflow.
 lowest_y = 10
 
 box_positions = {}
 
 for x, name in zip(col_x, col_names):
 
+    # Column header
     ax.text(
         x,
         7.0,
@@ -367,6 +365,7 @@ for x, name in zip(col_x, col_names):
 
     for i, act in enumerate(tasks):
 
+        # Stack tasks vertically downward
         y = 6.2 - i * 0.72
 
         lowest_y = min(lowest_y, y)
@@ -379,11 +378,12 @@ for x, name in zip(col_x, col_names):
             act["agent"]
         )
 
+        # Save box position for arrows later
         box_positions[act["raw"]] = (x, y)
 
-# =========================================================
-# DEPENDENCY ARROWS
-# =========================================================
+# DRAW DEPENDENCY ARROWS
+# Dashed arrows connect tasks where one
+# agent depends on another agent's work.
 for a1, a2 in dependency_arrows:
 
     if (
@@ -406,9 +406,7 @@ for a1, a2 in dependency_arrows:
             )
         )
 
-# =========================================================
-# ASSEMBLY
-# =========================================================
+# FINAL ASSEMBLY STEP
 assembly_y = lowest_y - 1.4
 center_x = sum(col_x) / len(col_x)
 
@@ -421,9 +419,8 @@ draw_box(
     w=1.9
 )
 
-# =========================================================
-# CONVERGENCE LINES
-# =========================================================
+# These lines visually pull all ingredient
+# columns into the final assembly stage.
 for x in col_x:
 
     ax.plot(
@@ -434,9 +431,8 @@ for x in col_x:
         linewidth=0.9
     )
 
-# =========================================================
-# DELIVERY
-# =========================================================
+# DELIVERY STEP
+# Final placeholder delivery stage.
 delivery_y = assembly_y - 1.1
 
 draw_box(
@@ -448,9 +444,9 @@ draw_box(
     w=1.8
 )
 
-# =========================================================
 # LEGEND
-# =========================================================
+# Simple color legend so the diagram
+# is easier to read quickly.
 legend_x = col_x[-1] + 2.5
 
 ax.text(
@@ -484,9 +480,9 @@ ax.text(
     fontsize=8
 )
 
-# =========================================================
-# CLEANUP
-# =========================================================
+# FINAL CLEANUP
+# Remove axes and tighten layout so the
+# figure looks presentation-ready.
 ax.set_xlim(-1, legend_x + 2)
 ax.set_ylim(delivery_y - 1, 8.2)
 
