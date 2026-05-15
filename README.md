@@ -2,9 +2,9 @@
 
 Ongoing work for the Human-Robot Collaboration and Companionship Lab at Cornell University. This project outlines my contributions towards the Stretch RE1 platform and autonomous navigation.
 
-### Pipeline Overview
+### System Setup
 
-The general pipeline is as follows. First, I rn the following to begin mapping the room with our Stretch RE1 robot: 
+The general pipeline is as follows. First, I run the following to begin mapping the room with our Stretch RE1 robot: 
 
 ```bash
  ros2 launch stretch_nav2 offline_mapping.launch.py
@@ -16,7 +16,7 @@ ros2 service call /switch_to_position_mode std_srvs/srv/Trigger {}
 
 This involved starting at a specified location, in our case, a corner bounded by a 90-degree wooden box that creates a noticeable landmark in the map for reproducibililty. 
 
-After having driven the robot around the room and orienting it at different angles, I was ready to save the map: 
+After having driven the robot around the room and orienting it at different angles, I was ready to save the map. the following creates a folder and saves the map as "updated_lab_map":
 
 ```bash
 source /opt/ros/humble/setup.bash
@@ -41,8 +41,11 @@ Then, navigate to the upper toolbar in RVIZ, and click on "2D Pose Estimate", th
 Then, run the following to echo the position of the robot in the map's frame: 
 
 ```bash
+ros2 run teleop_twist_keyboard \
+  teleop_twist_keyboard --ros-args \
+  -r cmd_vel:=/stretch/cmd_vel
+
 ros2 topic echo /amcl_pose
-```
 
 Then, copy the output of the ROS 2 topic echo, and place that in the "initial_pose_publisher.py" file (held locally as **ros2_ws_26/src**)
 
@@ -69,7 +72,7 @@ Finally, I "cd'ed" into the setup.py file and changed the entry points to reflec
 
 ![Setup.py Example Setup](Resources/setup.py.png)
 
-
+## NAV2 Pipeline
 ### 1. Calibrate the Robot
 
 In one terminal run:
